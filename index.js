@@ -25,6 +25,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(cors({
   origin : "https://airbnb-clone-frontend-sooty.vercel.app",
   optionsSuccessStatus: 200, 
+  credentials: true
 }));
 
 // mongoose.connect(process.env.MONGO_URL);

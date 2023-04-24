@@ -23,7 +23,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(cors({
-  origin : "*",
+  origin : "https://airbnb-clone-frontend-sooty.vercel.app",
+  optionsSuccessStatus: 200, 
 }));
 
 // mongoose.connect(process.env.MONGO_URL);
@@ -113,17 +114,7 @@ app.post("/login", async (req,res) => {
 app.get("/profile",(req,res) => {
  
   const {token} = req.cookies;
-  // if(token){
-  //   jwt.verify(token,jwtSecret,{},async(err,User)=> {
-  //     if(err) throw err;
-  //     // const userDoc = await User.findOne({});
 
-  //     res.json(User);
-  //   })
-  // }
-  //  else{
-  //   res.json(null);
-  //  }
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
       if (err) throw err;

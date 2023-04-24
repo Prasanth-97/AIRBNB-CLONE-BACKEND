@@ -142,17 +142,21 @@ app.post("/logout",(req,res) => {
 app.post('/upload-by-link', async (req,res) => {
   const {link} = req.body;
   const newName = 'photo' + Date.now() + '.jpg';
-  await imageDownloader.image({
-    url: link,
-    dest: '/tmp/' +newName,
-  });
-  const url = await uploadToS3('/tmp/' +newName, newName, mime.lookup('/tmp/' +newName));
-  res.json(url);
+  try{
+    await imageDownloader.image({
+      url: link,
+      dest: '/tmp/' +newName,
+    });
+    const url = await uploadToS3('/tmp/' +newName, newName, mime.lookup('/tmp/' +newName));
+    res.json(url);
+  }
+   catch(error){
+    res.status(500).send("not found")
+   }
 });
 
 
 app.post('/places', (req,res) => {
-
   const {token} = req.cookies;
   const {
     title,address,addedPhotos,description,price,
@@ -171,10 +175,10 @@ app.post('/places', (req,res) => {
 
 
 app.get("/user-places",(req,res)=>{
- 
   const {token} = req.cookies;
   jwt.verify(token,jwtSecret,{},async(err,userData)=>{
     const{id} = userData;
+    console.log("id",id);
     res.json(await Place.find({owner : id}));
   });
 });

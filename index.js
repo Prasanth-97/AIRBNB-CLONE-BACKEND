@@ -6,7 +6,7 @@ const User = require("./models/user.js");
 const Place = require("./models/place.js");
 const jwt  = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-// const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const imageDownloader = require("image-downloader");
 // const multer = require("multer");
 const fs = require("fs");
@@ -19,7 +19,7 @@ const mime = require("mime-types");
 
 require('dotenv').config();
 app.use("/uploads",express.static(__dirname +"/uploads"));
-// app.use(cookieParser());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(cors({

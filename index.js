@@ -6,9 +6,9 @@ const User = require("./models/user.js");
 const Place = require("./models/place.js");
 const jwt  = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const imageDownloader = require("image-downloader");
-const multer = require("multer");
+// const multer = require("multer");
 const fs = require("fs");
 const Booking = require("./models/booking.js");
 const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
@@ -19,7 +19,7 @@ const mime = require("mime-types");
 
 require('dotenv').config();
 app.use("/uploads",express.static(__dirname +"/uploads"));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 app.use(cors({
@@ -28,7 +28,13 @@ app.use(cors({
 
 // mongoose.connect(process.env.MONGO_URL);
 // const PORT = process.env.PORT;
-
+async function connectdb () {
+   const result = await  mongoose.connect(process.env.MONGO_URL,{
+    useNewUrlParser : true
+   });
+   console.log("connected db")
+}
+connectdb()
 async function uploadToS3 (path,originalFilename,mimetype){
   const client = new S3Client({
     region : "ap-southeast-2",
@@ -59,29 +65,30 @@ function getUserDataFromReq(req){
   })
 }
 
-app.get("/test", function (request, response) {
-  mongoose.connect(process.env.MONGO_URL);
+app.get("/", function (request, response) {
+ 
   response.json({"test" : "ok" });
 });
 
 app.post("/register",async (request,response)=>{
-  mongoose.connect(process.env.MONGO_URL);
-   const {name,email,password}  = request.body;
+  
   try{
+    const {name,email,password}  = request.body;
     const userDoc =  await User.create({
       name,
       email,
       password : bcrypt.hashSync(password,bcryptSalt)
     })
+    
      response.json(userDoc);
   }
   catch(error){
-    response.status(422).json(error);
+    response.status(500).json(error);
   }
 });
 
 app.post("/login", async (req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+  
   const {email,password} = req.body;
   const userDoc = await User.findOne({email});
   if (userDoc) {
@@ -104,7 +111,7 @@ app.post("/login", async (req,res) => {
 });
 
 app.get("/profile",(req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+ 
   const {token} = req.cookies;
   // if(token){
   //   jwt.verify(token,jwtSecret,{},async(err,User)=> {
@@ -145,7 +152,7 @@ app.post('/upload-by-link', async (req,res) => {
 
 
 app.post('/places', (req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+
   const {token} = req.cookies;
   const {
     title,address,addedPhotos,description,price,
@@ -164,7 +171,7 @@ app.post('/places', (req,res) => {
 
 
 app.get("/user-places",(req,res)=>{
-  mongoose.connect(process.env.MONGO_URL);
+ 
   const {token} = req.cookies;
   jwt.verify(token,jwtSecret,{},async(err,userData)=>{
     const{id} = userData;
@@ -173,13 +180,13 @@ app.get("/user-places",(req,res)=>{
 });
 
 app.get("/places/:id",async(req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+ 
   const {id} = req.params;
   res.json(await Place.findById(id));
 });
 
 app.put("/places",async(req,res)=>{
-  mongoose.connect(process.env.MONGO_URL);
+ 
   const {token} = req.cookies;
   const{id,title,address,addedPhotos,description
   ,perks,extraInfo,checkIn,checkOut,maxGuests,price} = req.body;
@@ -198,12 +205,12 @@ app.put("/places",async(req,res)=>{
 })
 
 app.get("/places",async(req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+ 
   res.json(await Place.find());
 })
 
 app.post("/bookings",async(req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+ 
   const userData = await getUserDataFromReq(req);
   const{place,checkIn,checkOut,numberOfGuests,
   name,phone,price,} = req.body;
@@ -219,7 +226,7 @@ app.post("/bookings",async(req,res) => {
 });
 
 app.get("/bookings",async(req,res) => {
-  mongoose.connect(process.env.MONGO_URL);
+ 
  const userData = await getUserDataFromReq(req);
  res.json(await Booking.find({user : userData.id}).populate("place"));
 });
